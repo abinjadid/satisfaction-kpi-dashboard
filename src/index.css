@@ -1,0 +1,147 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 210 20% 98%;
+    --foreground: 222 25% 12%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222 25% 12%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 25% 12%;
+
+    /* Primary #006C35 */
+    --primary: 147 100% 21%;
+    --primary-foreground: 0 0% 100%;
+
+    /* Secondary #0E7490 */
+    --secondary: 192 82% 31%;
+    --secondary-foreground: 0 0% 100%;
+
+    /* Accent #16A34A */
+    --accent: 142 76% 36%;
+    --accent-foreground: 0 0% 100%;
+
+    --muted: 210 16% 95%;
+    --muted-foreground: 215 16% 45%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 214 20% 90%;
+    --input: 214 20% 90%;
+    --ring: 147 100% 21%;
+
+    --radius: 0.9rem;
+  }
+
+  .dark {
+    --background: 222 30% 8%;
+    --foreground: 210 20% 96%;
+
+    --card: 222 26% 12%;
+    --card-foreground: 210 20% 96%;
+
+    --popover: 222 26% 12%;
+    --popover-foreground: 210 20% 96%;
+
+    --primary: 142 70% 45%;
+    --primary-foreground: 222 30% 8%;
+
+    --secondary: 192 70% 45%;
+    --secondary-foreground: 222 30% 8%;
+
+    --accent: 142 70% 50%;
+    --accent-foreground: 222 30% 8%;
+
+    --muted: 217 24% 18%;
+    --muted-foreground: 215 18% 65%;
+
+    --destructive: 0 62% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 217 24% 20%;
+    --input: 217 24% 22%;
+    --ring: 142 70% 45%;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  html {
+    font-family: 'IBM Plex Sans Arabic', system-ui, sans-serif;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: 'ss01';
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--border));
+    border-radius: 9999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--muted-foreground) / 0.5);
+  }
+}
+
+@layer utilities {
+  .skeleton {
+    @apply relative overflow-hidden bg-muted/70 rounded-md;
+  }
+  .skeleton::after {
+    content: '';
+    @apply absolute inset-0;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      hsl(var(--card) / 0.6),
+      transparent
+    );
+    transform: translateX(100%);
+    animation: shimmer 1.5s infinite;
+  }
+
+  .glass-header {
+    backdrop-filter: saturate(180%) blur(12px);
+  }
+}
+
+/* ===== Print styles ===== */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 12mm;
+  }
+
+  body {
+    background: #fff !important;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  .print-block {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .dashboard-grid {
+    gap: 12px !important;
+  }
+}
