@@ -3,7 +3,9 @@ import react from '@vitejs/plugin-react';
 import path from 'path';
 
 // https://vite.dev/config/
-export default defineConfig({
+export default defineConfig(({ command }) => ({
+  // عند البناء للنشر على GitHub Pages يُقدَّم الموقع من مسار فرعي باسم المستودع.
+  base: command === 'build' ? '/satisfaction-kpi-dashboard/' : '/',
   plugins: [react()],
   server: {
     // احترام منفذ بيئة التشغيل عند توفّره (مثل أدوات المعاينة).
@@ -27,4 +29,4 @@ export default defineConfig({
       },
     },
   },
-});
+}));
