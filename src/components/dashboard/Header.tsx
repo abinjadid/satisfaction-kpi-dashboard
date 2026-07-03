@@ -9,6 +9,7 @@ import {
   Sun,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import dgaLogo from '@/assets/dga-logo.svg';
 
 interface HeaderProps {
   theme: 'light' | 'dark';
@@ -39,18 +40,7 @@ export function Header({
       <div className="mx-auto flex max-w-[1600px] flex-wrap items-center justify-between gap-4 px-4 py-3 sm:px-6">
         {/* الهوية */}
         <div className="flex items-center gap-3">
-          {/* عنصر نائب للشعار */}
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm">
-            <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none">
-              <path
-                d="M6 13l4 4 8-9"
-                stroke="currentColor"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </div>
+          <img src={dgaLogo} alt="شعار هيئة الحكومة الرقمية" className="h-12 w-auto" />
           <div>
             <h1 className="text-base font-extrabold leading-tight text-foreground sm:text-lg">
               لوحة معلومات مؤشر الرضا عن الخدمات الاستشارية
