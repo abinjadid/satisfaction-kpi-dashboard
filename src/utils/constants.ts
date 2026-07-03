@@ -1,4 +1,4 @@
-import type { DimensionKey, SatisfactionLevel } from '@/types';
+import type { ImplementationStatus, SatisfactionLevel } from '@/types';
 
 /** ألوان العلامة التجارية المستخدمة في المخططات والتصدير. */
 export const BRAND = {
@@ -26,26 +26,6 @@ export const MONTHS_AR = [
   'ديسمبر',
 ] as const;
 
-/** التسميات العربية لأبعاد الخدمة الستة. */
-export const DIMENSION_LABELS: Record<DimensionKey, string> = {
-  quality: 'جودة الخدمة',
-  speed: 'سرعة الإنجاز',
-  clarity: 'وضوح المخرجات',
-  communication: 'سهولة التواصل',
-  professionalism: 'احترافية المستشار',
-  addedValue: 'القيمة المضافة',
-};
-
-/** ترتيب ثابت لمفاتيح الأبعاد لضمان اتساق العرض. */
-export const DIMENSION_KEYS: DimensionKey[] = [
-  'quality',
-  'speed',
-  'clarity',
-  'communication',
-  'professionalism',
-  'addedValue',
-];
-
 /** التسميات والألوان لمستويات الرضا. */
 export const SATISFACTION_LEVELS: Record<
   SatisfactionLevel,
@@ -58,26 +38,26 @@ export const SATISFACTION_LEVELS: Record<
   veryUnsatisfied: { label: 'غير راضٍ إطلاقاً', color: BRAND.red },
 };
 
-/** أنواع الخدمات الاستشارية المتاحة. */
-export const SERVICE_TYPES = [
-  'استشارات استراتيجية',
-  'استشارات مالية',
-  'استشارات قانونية',
-  'استشارات تقنية',
-  'استشارات إدارية',
-  'استشارات الموارد البشرية',
-  'دراسات الجدوى',
-  'إدارة المشاريع',
-] as const;
+/** التسميات والألوان لدرجات تطبيق التوصيات. */
+export const IMPLEMENTATION_STATUS: Record<
+  ImplementationStatus,
+  { label: string; color: string }
+> = {
+  full: { label: 'تم تطبيقها بالكامل', color: BRAND.primary },
+  partial: { label: 'تطبيق جزئي / قيد التنفيذ', color: BRAND.secondary },
+  none: { label: 'لم يتم التطبيق بعد', color: BRAND.red },
+  unspecified: { label: 'لم يُحدَّد', color: BRAND.slate },
+};
 
-/** الجهات المستفيدة المتاحة. */
-export const ENTITIES = [
-  'وزارة المالية',
-  'وزارة الصحة',
-  'وزارة التعليم',
-  'هيئة الاتصالات',
-  'أمانة المنطقة',
-  'الهيئة العامة للإحصاء',
-  'صندوق التنمية',
-  'هيئة تقويم التعليم',
+/** المجالات المعروفة التي قد تساهم فيها الاستشارة (لاقتراحها في نموذج الإضافة). */
+export const CONTRIBUTION_AREAS = [
+  'تعزيز الكفاءة التشغيلية',
+  'تقليص مدة تنفيذ المشاريع الرقمية',
+  'تحسين التنسيق بين الإدارات الداخلية',
+  'زيادة معدل رضا المستفيد النهائي',
+  'تحسين جانب التخطيط الاستراتيجي',
+  'تحديد التوجهات الصحيحة للجهات',
+  'تحسين الموائمة مع التوجهات الوطنية',
+  'دليل استرشادي للتحول الرقمي',
+  'الاستشارة في مراجعة استراتيجية التحول الرقمي',
 ] as const;

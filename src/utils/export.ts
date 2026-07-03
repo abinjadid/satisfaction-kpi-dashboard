@@ -5,8 +5,7 @@
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import type { SurveyResponse } from '@/types';
-import { DIMENSION_KEYS, DIMENSION_LABELS } from './constants';
-import { responseAverage } from './calculations';
+import { IMPLEMENTATION_STATUS } from './constants';
 
 /** التقاط عنصر DOM كـ canvas بدقة عالية مع خلفية بيضاء. */
 async function captureElement(element: HTMLElement): Promise<HTMLCanvasElement> {
@@ -104,21 +103,25 @@ function csvCell(value: string | number): string {
 function buildRows(responses: SurveyResponse[]): (string | number)[][] {
   const header = [
     'الجهة',
-    'نوع الخدمة',
     'تاريخ الاستجابة',
-    ...DIMENSION_KEYS.map((k) => DIMENSION_LABELS[k]),
-    'المتوسط',
-    'التوصية',
-    'ملاحظات',
+    'تقييم الرضا',
+    'احتمالية التوصية',
+    'درجة تطبيق التوصيات',
+    'مجالات المساهمة',
+    'وصف التنفيذ',
+    'جوانب التحسين',
+    'خدمات مستقبلية مرغوبة',
   ];
   const rows = responses.map((r) => [
     r.entity,
-    r.serviceType,
     r.date,
-    ...DIMENSION_KEYS.map((k) => r.dimensions[k]),
-    responseAverage(r).toFixed(2),
-    r.recommends ? 'نعم' : 'لا',
-    r.notes ?? '',
+    r.satisfaction.toFixed(2),
+    r.recommendation !== null ? r.recommendation.toFixed(2) : '',
+    IMPLEMENTATION_STATUS[r.implementationStatus].label,
+    r.contributionAreas.join(' | '),
+    r.implementationNotes ?? '',
+    r.improvementNotes ?? '',
+    r.futureServiceRequests ?? '',
   ]);
   return [header, ...rows];
 }

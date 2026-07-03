@@ -8,7 +8,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
-import type { ServiceScore } from '@/types';
+import type { ContributionAreaScore } from '@/types';
 import { BRAND } from '@/utils/constants';
 import { ChartTooltip } from './ChartTooltip';
 
@@ -37,8 +37,12 @@ function ValueLabel(props: {
   );
 }
 
-/** مخطط أعمدة أفقي لأفضل الخدمات الاستشارية تقييماً (نسبة مئوية). */
-export function TopServicesBarChart({ data }: { data: ServiceScore[] }) {
+/** مخطط أعمدة أفقي لأفضل مجالات مساهمة الاستشارات تقييماً (نسبة مئوية). */
+export function TopContributionAreasBarChart({
+  data,
+}: {
+  data: ContributionAreaScore[];
+}) {
   const palette = [
     BRAND.primary,
     BRAND.accent,
@@ -58,9 +62,9 @@ export function TopServicesBarChart({ data }: { data: ServiceScore[] }) {
         <XAxis type="number" domain={[0, 100]} hide />
         <YAxis
           type="category"
-          dataKey="serviceType"
+          dataKey="area"
           orientation="right"
-          width={140}
+          width={160}
           tick={{ fontSize: 12, fill: 'hsl(var(--foreground))' }}
           tickLine={false}
           axisLine={false}

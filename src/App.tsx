@@ -3,13 +3,13 @@ import { AnimatePresence, motion } from 'framer-motion';
 import {
   Activity,
   BarChart3,
+  CheckCircle2,
   Clock,
   Gauge,
   LineChart as LineChartIcon,
   ListChecks,
   PieChart as PieChartIcon,
   Plus,
-  Radar as RadarIcon,
   Sparkles,
   Table as TableIcon,
   ThumbsDown,
@@ -32,8 +32,8 @@ import { GaugeChart } from '@/components/charts/GaugeChart';
 import { SatisfactionLineChart } from '@/components/charts/SatisfactionLineChart';
 import { ResponsesBarChart } from '@/components/charts/ResponsesBarChart';
 import { SatisfactionPieChart } from '@/components/charts/SatisfactionPieChart';
-import { DimensionsRadarChart } from '@/components/charts/DimensionsRadarChart';
-import { TopServicesBarChart } from '@/components/charts/TopServicesBarChart';
+import { ImplementationStatusChart } from '@/components/charts/ImplementationStatusChart';
+import { TopContributionAreasBarChart } from '@/components/charts/TopContributionAreasBarChart';
 
 import { useResponses } from '@/hooks/useResponses';
 import { useTheme } from '@/hooks/useTheme';
@@ -44,7 +44,7 @@ import {
   exportToPdf,
   exportToPng,
 } from '@/utils/export';
-import { formatNumber } from '@/utils/format';
+import { formatNumber, formatPercent } from '@/utils/format';
 
 export default function App() {
   const {
@@ -54,6 +54,8 @@ export default function App() {
     insights,
     filters,
     years,
+    entities,
+    contributionAreas,
     setFilter,
     resetFilters,
     addResponse,
@@ -91,7 +93,7 @@ export default function App() {
     toast({
       tone: 'info',
       title: 'تمت إعادة تعيين البيانات',
-      description: 'تمت استعادة البيانات الافتراضية.',
+      description: 'تمت استعادة بيانات الاستبيان الأصلية.',
     });
   };
 
@@ -157,6 +159,8 @@ export default function App() {
               <Filters
                 filters={filters}
                 years={years}
+                entities={entities}
+                contributionAreas={contributionAreas}
                 onChange={setFilter}
                 onReset={resetFilters}
               />
@@ -224,23 +228,25 @@ export default function App() {
                   {/* الصف الثالث */}
                   <div className="dashboard-grid grid grid-cols-1 gap-4 lg:grid-cols-2">
                     <SectionCard
-                      title="تقييم أبعاد الخدمة"
-                      description="متوسط التقييم لكل بُعد (من 5)"
-                      icon={RadarIcon}
+                      title="حالة تطبيق التوصيات"
+                      description="مدى تطبيق الجهات المستفيدة لتوصيات الاستشارة"
+                      icon={CheckCircle2}
                       index={0}
                     >
-                      <DimensionsRadarChart
-                        dimensions={metrics.dimensionAverages}
+                      <ImplementationStatusChart
+                        breakdown={metrics.implementationBreakdown}
                       />
                     </SectionCard>
 
                     <SectionCard
-                      title="أفضل الخدمات الاستشارية تقييماً"
-                      description="ترتيب الخدمات حسب نسبة الرضا"
+                      title="أفضل مجالات مساهمة الاستشارات تقييماً"
+                      description="ترتيب مجالات المساهمة حسب نسبة الرضا"
                       icon={Trophy}
                       index={1}
                     >
-                      <TopServicesBarChart data={metrics.topServices} />
+                      <TopContributionAreasBarChart
+                        data={metrics.topContributionAreas}
+                      />
                     </SectionCard>
                   </div>
 
@@ -255,26 +261,26 @@ export default function App() {
                     <SummaryInsights insights={insights} />
                   </section>
 
-                  {/* أداء الخدمات + مؤشرات إضافية */}
+                  {/* أداء مجالات المساهمة + مؤشرات إضافية */}
                   <div className="dashboard-grid grid grid-cols-1 gap-4 lg:grid-cols-3">
                     <SectionCard
-                      title="الخدمات الأعلى أداءً"
+                      title="مجالات المساهمة الأعلى أداءً"
                       icon={Trophy}
                       index={0}
                     >
                       <ServicePerformance
-                        services={metrics.topServices.slice(0, 5)}
+                        areas={metrics.topContributionAreas.slice(0, 5)}
                         variant="top"
                       />
                     </SectionCard>
 
                     <SectionCard
-                      title="الخدمات الأقل أداءً"
+                      title="مجالات المساهمة الأقل أداءً"
                       icon={ThumbsDown}
                       index={1}
                     >
                       <ServicePerformance
-                        services={metrics.bottomServices}
+                        areas={metrics.bottomContributionAreas}
                         variant="bottom"
                       />
                     </SectionCard>
@@ -287,8 +293,8 @@ export default function App() {
                       <div className="flex flex-col gap-4">
                         <StatRow
                           icon={Clock}
-                          label="متوسط زمن تسجيل الاستجابة"
-                          value={`${metrics.avgResponseTimeDays.toLocaleString('ar-SA-u-nu-latn')} يوم`}
+                          label="متوسط مدة تعبئة الاستبيان"
+                          value={`${metrics.avgCompletionMinutes.toLocaleString('ar-SA-u-nu-latn')} دقيقة`}
                         />
                         <StatRow
                           icon={ListChecks}
@@ -297,8 +303,8 @@ export default function App() {
                         />
                         <StatRow
                           icon={Trophy}
-                          label="عدد الخدمات المُقيَّمة"
-                          value={formatNumber(metrics.topServices.length)}
+                          label="نسبة التقييمات الكاملة (5/5)"
+                          value={formatPercent(metrics.perfectScoreRate)}
                         />
                       </div>
                     </SectionCard>
@@ -352,6 +358,7 @@ export default function App() {
         open={dialogOpen}
         onClose={() => setDialogOpen(false)}
         onSubmit={handleAdd}
+        knownEntities={entities}
       />
     </div>
   );

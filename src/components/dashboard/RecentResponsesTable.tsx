@@ -1,9 +1,9 @@
 import { useMemo, useState } from 'react';
-import { ArrowUpDown, Check, Trash2, X } from 'lucide-react';
+import { ArrowUpDown, Trash2 } from 'lucide-react';
 import type { SurveyResponse } from '@/types';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { responseAverage } from '@/utils/calculations';
+import { IMPLEMENTATION_STATUS } from '@/utils/constants';
 import { formatDateAr } from '@/utils/format';
 import { cn } from '@/utils/cn';
 
@@ -12,7 +12,7 @@ interface RecentResponsesTableProps {
   onDelete: (id: string) => void;
 }
 
-type SortKey = 'date' | 'entity' | 'serviceType' | 'average';
+type SortKey = 'date' | 'entity' | 'satisfaction' | 'recommendation';
 type SortDir = 'asc' | 'desc';
 
 /** جدول أحدث الاستجابات مع فرز قابل للنقر وحذف. */
@@ -29,14 +29,17 @@ export function RecentResponsesTable({
     copy.sort((a, b) => {
       let cmp = 0;
       switch (sortKey) {
-        case 'average':
-          cmp = responseAverage(a) - responseAverage(b);
+        case 'satisfaction':
+          cmp = a.satisfaction - b.satisfaction;
+          break;
+        case 'recommendation':
+          cmp = (a.recommendation ?? -1) - (b.recommendation ?? -1);
           break;
         case 'date':
           cmp = new Date(a.date).getTime() - new Date(b.date).getTime();
           break;
         default:
-          cmp = a[sortKey].localeCompare(b[sortKey], 'ar');
+          cmp = a.entity.localeCompare(b.entity, 'ar');
       }
       return sortDir === 'asc' ? cmp : -cmp;
     });
@@ -73,88 +76,83 @@ export function RecentResponsesTable({
         <thead>
           <tr className="border-b border-border text-xs text-muted-foreground">
             {header('entity', 'الجهة')}
-            {header('serviceType', 'نوع الخدمة')}
             {header('date', 'التاريخ')}
-            {header('average', 'المتوسط')}
-            <th className="px-3 py-2 text-right font-semibold">التوصية</th>
+            {header('satisfaction', 'الرضا')}
+            {header('recommendation', 'التوصية')}
+            <th className="px-3 py-2 text-right font-semibold">تطبيق التوصيات</th>
             <th className="px-3 py-2 text-center font-semibold no-print">
               إجراء
             </th>
           </tr>
         </thead>
         <tbody>
-          {sorted.map((r) => {
-            const avg = responseAverage(r);
-            return (
-              <tr
-                key={r.id}
-                className="border-b border-border/60 transition-colors hover:bg-muted/40"
-              >
-                <td className="px-3 py-2.5 font-medium text-card-foreground">
-                  {r.entity}
-                </td>
-                <td className="px-3 py-2.5 text-muted-foreground">
-                  {r.serviceType}
-                </td>
-                <td className="whitespace-nowrap px-3 py-2.5 text-muted-foreground">
-                  {formatDateAr(r.date)}
-                </td>
-                <td className="px-3 py-2.5">
-                  <Badge
-                    variant={
-                      avg >= 4 ? 'success' : avg >= 3 ? 'warning' : 'destructive'
-                    }
-                  >
-                    {avg.toFixed(2)}
-                  </Badge>
-                </td>
-                <td className="px-3 py-2.5">
-                  {r.recommends ? (
-                    <span className="inline-flex items-center gap-1 text-accent">
-                      <Check className="h-4 w-4" /> نعم
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center gap-1 text-destructive">
-                      <X className="h-4 w-4" /> لا
-                    </span>
-                  )}
-                </td>
-                <td className="px-3 py-2.5 text-center no-print">
-                  {pendingDelete === r.id ? (
-                    <span className="inline-flex items-center gap-1">
-                      <Button
-                        size="sm"
-                        variant="destructive"
-                        className="h-7 px-2"
-                        onClick={() => {
-                          onDelete(r.id);
-                          setPendingDelete(null);
-                        }}
-                      >
-                        تأكيد
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="h-7 px-2"
-                        onClick={() => setPendingDelete(null)}
-                      >
-                        إلغاء
-                      </Button>
-                    </span>
-                  ) : (
-                    <button
-                      onClick={() => setPendingDelete(r.id)}
-                      className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
-                      aria-label="حذف الاستجابة"
+          {sorted.map((r) => (
+            <tr
+              key={r.id}
+              className="border-b border-border/60 transition-colors hover:bg-muted/40"
+            >
+              <td className="px-3 py-2.5 font-medium text-card-foreground">
+                {r.entity}
+              </td>
+              <td className="whitespace-nowrap px-3 py-2.5 text-muted-foreground">
+                {r.hasExactDate ? formatDateAr(r.date) : `${formatDateAr(r.date)} (تقديري)`}
+              </td>
+              <td className="px-3 py-2.5">
+                <Badge
+                  variant={
+                    r.satisfaction >= 4
+                      ? 'success'
+                      : r.satisfaction >= 3
+                        ? 'warning'
+                        : 'destructive'
+                  }
+                >
+                  {r.satisfaction.toFixed(1)}
+                </Badge>
+              </td>
+              <td className="px-3 py-2.5 text-muted-foreground">
+                {r.recommendation !== null ? r.recommendation.toFixed(1) : '—'}
+              </td>
+              <td className="px-3 py-2.5">
+                <span className="text-xs text-muted-foreground">
+                  {IMPLEMENTATION_STATUS[r.implementationStatus].label}
+                </span>
+              </td>
+              <td className="px-3 py-2.5 text-center no-print">
+                {pendingDelete === r.id ? (
+                  <span className="inline-flex items-center gap-1">
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      className="h-7 px-2"
+                      onClick={() => {
+                        onDelete(r.id);
+                        setPendingDelete(null);
+                      }}
                     >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
-                  )}
-                </td>
-              </tr>
-            );
-          })}
+                      تأكيد
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-7 px-2"
+                      onClick={() => setPendingDelete(null)}
+                    >
+                      إلغاء
+                    </Button>
+                  </span>
+                ) : (
+                  <button
+                    onClick={() => setPendingDelete(r.id)}
+                    className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
+                    aria-label="حذف الاستجابة"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                )}
+              </td>
+            </tr>
+          ))}
         </tbody>
       </table>
     </div>

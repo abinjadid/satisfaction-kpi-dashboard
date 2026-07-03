@@ -3,39 +3,24 @@
  * كل الدوال نقية (pure) لتسهيل الاختبار وإعادة الاستخدام (مبدأ المسؤولية الواحدة).
  */
 import type {
+  ContributionAreaScore,
   DashboardMetrics,
+  ImplementationBreakdown,
   Insight,
   KpiMetric,
   MonthlyPoint,
   SatisfactionDistribution,
   SatisfactionLevel,
-  ServiceDimensions,
-  ServiceScore,
   SurveyResponse,
 } from '@/types';
-import { DIMENSION_KEYS, DIMENSION_LABELS, MONTHS_AR } from './constants';
+import { MONTHS_AR } from './constants';
 
-const EMPTY_DIMENSIONS: ServiceDimensions = {
-  quality: 0,
-  speed: 0,
-  clarity: 0,
-  communication: 0,
-  professionalism: 0,
-  addedValue: 0,
-};
-
-/** متوسط أبعاد استجابة واحدة (من 5). */
-export function responseAverage(r: SurveyResponse): number {
-  const values = DIMENSION_KEYS.map((k) => r.dimensions[k]);
-  return values.reduce((a, b) => a + b, 0) / values.length;
-}
-
-/** تحويل متوسط (من 5) إلى مستوى رضا. */
-export function levelFromAverage(avg: number): SatisfactionLevel {
-  if (avg >= 4.5) return 'verySatisfied';
-  if (avg >= 3.5) return 'satisfied';
-  if (avg >= 2.5) return 'neutral';
-  if (avg >= 1.5) return 'unsatisfied';
+/** تحويل تقييم رضا (من 5) إلى مستوى رضا. */
+export function levelFromAverage(satisfaction: number): SatisfactionLevel {
+  if (satisfaction >= 4.5) return 'verySatisfied';
+  if (satisfaction >= 3.5) return 'satisfied';
+  if (satisfaction >= 2.5) return 'neutral';
+  if (satisfaction >= 1.5) return 'unsatisfied';
   return 'veryUnsatisfied';
 }
 
@@ -52,24 +37,6 @@ function buildMetric(value: number, previous: number): KpiMetric {
   return { value, delta, trend };
 }
 
-/** حساب متوسطات الأبعاد عبر مجموعة استجابات. */
-export function computeDimensionAverages(
-  responses: SurveyResponse[],
-): ServiceDimensions {
-  if (responses.length === 0) return { ...EMPTY_DIMENSIONS };
-  const totals: ServiceDimensions = { ...EMPTY_DIMENSIONS };
-  for (const r of responses) {
-    for (const key of DIMENSION_KEYS) {
-      totals[key] += r.dimensions[key];
-    }
-  }
-  const result = { ...EMPTY_DIMENSIONS };
-  for (const key of DIMENSION_KEYS) {
-    result[key] = safeAvg(totals[key], responses.length);
-  }
-  return result;
-}
-
 /** توزيع الاستجابات على مستويات الرضا الخمسة. */
 export function computeDistribution(
   responses: SurveyResponse[],
@@ -82,12 +49,28 @@ export function computeDistribution(
     veryUnsatisfied: 0,
   };
   for (const r of responses) {
-    dist[levelFromAverage(responseAverage(r))] += 1;
+    dist[levelFromAverage(r.satisfaction)] += 1;
   }
   return dist;
 }
 
-/** السلاسل الشهرية (رضا % وعدد الاستجابات) لسنة معيّنة أو لكل البيانات. */
+/** توزيع الاستجابات على درجات تطبيق التوصيات. */
+export function computeImplementationBreakdown(
+  responses: SurveyResponse[],
+): ImplementationBreakdown {
+  const breakdown: ImplementationBreakdown = {
+    full: 0,
+    partial: 0,
+    none: 0,
+    unspecified: 0,
+  };
+  for (const r of responses) {
+    breakdown[r.implementationStatus] += 1;
+  }
+  return breakdown;
+}
+
+/** السلاسل الشهرية (رضا % وعدد الاستجابات) عبر أشهر السنة. */
 export function computeMonthly(responses: SurveyResponse[]): MonthlyPoint[] {
   const buckets = MONTHS_AR.map((month, index) => ({
     month,
@@ -99,7 +82,7 @@ export function computeMonthly(responses: SurveyResponse[]): MonthlyPoint[] {
   for (const r of responses) {
     const month = new Date(r.date).getMonth();
     if (month >= 0 && month < 12) {
-      buckets[month].sum += (responseAverage(r) / 5) * 100;
+      buckets[month].sum += (r.satisfaction / 5) * 100;
       buckets[month].count += 1;
     }
   }
@@ -112,44 +95,46 @@ export function computeMonthly(responses: SurveyResponse[]): MonthlyPoint[] {
   }));
 }
 
-/** ترتيب الخدمات حسب متوسط التقييم. */
-export function computeServiceScores(
+/** ترتيب مجالات مساهمة الاستشارات حسب متوسط الرضا (استجابة قد تنتمي لأكثر من مجال). */
+export function computeContributionAreaScores(
   responses: SurveyResponse[],
-): ServiceScore[] {
+): ContributionAreaScore[] {
   const groups = new Map<string, { sum: number; count: number }>();
   for (const r of responses) {
-    const g = groups.get(r.serviceType) ?? { sum: 0, count: 0 };
-    g.sum += responseAverage(r);
-    g.count += 1;
-    groups.set(r.serviceType, g);
+    for (const area of r.contributionAreas) {
+      const g = groups.get(area) ?? { sum: 0, count: 0 };
+      g.sum += r.satisfaction;
+      g.count += 1;
+      groups.set(area, g);
+    }
   }
   return Array.from(groups.entries())
-    .map(([serviceType, g]) => {
+    .map(([area, g]) => {
       const average = safeAvg(g.sum, g.count);
       return {
-        serviceType,
+        area,
         average,
         percentage: Math.round((average / 5) * 1000) / 10,
         responses: g.count,
       };
     })
-    .sort((a, b) => b.average - a.average);
+    .sort((a, b) => b.average - a.average || b.responses - a.responses);
 }
 
-/** متوسط زمن التسجيل بالأيام (من تاريخ الاستجابة إلى الإدخال). */
-function computeAvgResponseTime(responses: SurveyResponse[]): number {
+/** متوسط مدة تعبئة الاستبيان بالدقائق (لمن توفّر لديهم وقتا البدء والانتهاء). */
+function computeAvgCompletionMinutes(responses: SurveyResponse[]): number {
+  const values = responses
+    .map((r) => r.completionMinutes)
+    .filter((v): v is number => v !== null);
+  if (values.length === 0) return 0;
+  return Math.round(safeAvg(values.reduce((a, b) => a + b, 0), values.length) * 10) / 10;
+}
+
+/** نسبة الاستجابات التي منحت تقييماً كاملاً (5 من 5). */
+function computePerfectScoreRate(responses: SurveyResponse[]): number {
   if (responses.length === 0) return 0;
-  let total = 0;
-  let count = 0;
-  for (const r of responses) {
-    const responded = new Date(r.date).getTime();
-    const created = new Date(r.createdAt).getTime();
-    if (!Number.isNaN(responded) && !Number.isNaN(created)) {
-      total += Math.max(0, (created - responded) / 86_400_000);
-      count += 1;
-    }
-  }
-  return Math.round(safeAvg(total, count) * 10) / 10;
+  const perfect = responses.filter((r) => r.satisfaction >= 5).length;
+  return (perfect / responses.length) * 100;
 }
 
 /** الفصل بين استجابات الشهر الحالي والشهر السابق ضمن المجموعة المعطاة. */
@@ -177,21 +162,23 @@ function splitByRecentMonth(responses: SurveyResponse[]): {
 /** نسبة الرضا العام (%) لمجموعة استجابات. */
 export function overallSatisfactionPct(responses: SurveyResponse[]): number {
   if (responses.length === 0) return 0;
-  const sum = responses.reduce((acc, r) => acc + responseAverage(r), 0);
+  const sum = responses.reduce((acc, r) => acc + r.satisfaction, 0);
   return (safeAvg(sum, responses.length) / 5) * 100;
 }
 
-/** نسبة التوصية (%) لمجموعة استجابات. */
+/** نسبة التوصية (%) مبنية على متوسط احتمالية التوصية (1-5) لمن أجاب عليها. */
 export function recommendationPct(responses: SurveyResponse[]): number {
-  if (responses.length === 0) return 0;
-  const yes = responses.filter((r) => r.recommends).length;
-  return (yes / responses.length) * 100;
+  const values = responses
+    .map((r) => r.recommendation)
+    .filter((v): v is number => v !== null);
+  if (values.length === 0) return 0;
+  return (safeAvg(values.reduce((a, b) => a + b, 0), values.length) / 5) * 100;
 }
 
-/** المتوسط العام للتقييم (من 5). */
+/** المتوسط العام لتقييم الرضا (من 5). */
 export function averageRating(responses: SurveyResponse[]): number {
   if (responses.length === 0) return 0;
-  const sum = responses.reduce((acc, r) => acc + responseAverage(r), 0);
+  const sum = responses.reduce((acc, r) => acc + r.satisfaction, 0);
   return sum / responses.length;
 }
 
@@ -212,10 +199,14 @@ export function computeDashboardMetrics(
   const recNow = recommendationPct(responses);
   const recPrev = previous.length > 0 ? recommendationPct(previous) : recNow;
 
-  const scores = computeServiceScores(responses);
+  const areaScores = computeContributionAreaScores(responses);
+  // نفضّل الاعتماد على الاستجابات ذات التاريخ الفعلي حتى لا يطغى تاريخ تقديري
+  // (لاستجابات لا تتضمن طابعاً زمنياً في المصدر) على آخر تحديث حقيقي معروف.
+  const datedResponses = responses.filter((r) => r.hasExactDate);
+  const lastUpdatedSource = datedResponses.length > 0 ? datedResponses : responses;
   const lastUpdated =
-    responses.length > 0
-      ? responses
+    lastUpdatedSource.length > 0
+      ? lastUpdatedSource
           .map((r) => r.createdAt)
           .sort()
           .at(-1) ?? null
@@ -228,11 +219,12 @@ export function computeDashboardMetrics(
     recommendationRate: buildMetric(recNow, recPrev),
     responsesMetric: buildMetric(current.length, previous.length),
     distribution: computeDistribution(responses),
-    dimensionAverages: computeDimensionAverages(responses),
+    implementationBreakdown: computeImplementationBreakdown(responses),
     monthly: computeMonthly(responses),
-    topServices: scores.slice(0, 6),
-    bottomServices: [...scores].reverse().slice(0, 5),
-    avgResponseTimeDays: computeAvgResponseTime(responses),
+    topContributionAreas: areaScores.slice(0, 6),
+    bottomContributionAreas: [...areaScores].reverse().slice(0, 5),
+    perfectScoreRate: computePerfectScoreRate(responses),
+    avgCompletionMinutes: computeAvgCompletionMinutes(responses),
     lastUpdated,
   };
 }
@@ -281,30 +273,33 @@ export function generateInsights(metrics: DashboardMetrics): Insight[] {
     });
   }
 
-  // أعلى وأقل بُعد تقييماً
-  const dims = DIMENSION_KEYS.map((k) => ({
-    key: k,
-    value: metrics.dimensionAverages[k],
-  }));
-  const best = dims.reduce((a, b) => (b.value > a.value ? b : a));
-  const worst = dims.reduce((a, b) => (b.value < a.value ? b : a));
+  // أبرز مجال مساهمة
+  if (metrics.topContributionAreas.length > 0) {
+    const best = metrics.topContributionAreas[0];
+    insights.push({
+      id: 'best-area',
+      tone: 'positive',
+      text: `أبرز مجالات مساهمة الاستشارات: «${best.area}» بمتوسط رضا ${best.average.toFixed(2)} من 5.`,
+    });
+  }
 
-  insights.push({
-    id: 'best-dim',
-    tone: 'positive',
-    text: `أعلى تقييم كان لبُعد «${DIMENSION_LABELS[best.key]}» بمتوسط ${best.value.toFixed(2)} من 5.`,
-  });
-  insights.push({
-    id: 'worst-dim',
-    tone: 'negative',
-    text: `أقل تقييم كان لبُعد «${DIMENSION_LABELS[worst.key]}» بمتوسط ${worst.value.toFixed(2)} من 5، ويُنصح بتحسينه.`,
-  });
+  // نسبة تطبيق التوصيات
+  const impl = metrics.implementationBreakdown;
+  const implTotal = impl.full + impl.partial + impl.none + impl.unspecified;
+  if (implTotal > 0) {
+    const appliedPct = ((impl.full + impl.partial) / implTotal) * 100;
+    insights.push({
+      id: 'impl',
+      tone: appliedPct >= 80 ? 'positive' : 'neutral',
+      text: `${appliedPct.toFixed(0)}% من الجهات المستفيدة طبّقت التوصيات كلياً أو جزئياً.`,
+    });
+  }
 
   // نسبة التوصية
   insights.push({
     id: 'rec',
     tone: metrics.recommendationRate.value >= 80 ? 'positive' : 'neutral',
-    text: `${metrics.recommendationRate.value.toFixed(0)}% من الجهات المستفيدة توصي بالخدمات الاستشارية.`,
+    text: `${metrics.recommendationRate.value.toFixed(0)}% متوسط احتمالية توصية الجهات المستفيدة بالخدمات الاستشارية.`,
   });
 
   return insights;

@@ -4,15 +4,17 @@
  */
 import type { SurveyResponse } from '@/types';
 import { storage } from './storageService';
-import { generateSeedResponses } from './seedData';
+import { REAL_RESPONSES } from './realResponses';
 
 const RESPONSES_KEY = 'responses';
-const SEEDED_KEY = 'seeded';
+const SEEDED_KEY = 'seeded-v2';
 
 /** واجهة مجرّدة لمصدر البيانات لتسهيل استبدال التنفيذ. */
 export interface IDataService {
   getAll(): Promise<SurveyResponse[]>;
-  add(input: Omit<SurveyResponse, 'id' | 'createdAt'>): Promise<SurveyResponse>;
+  add(
+    input: Omit<SurveyResponse, 'id' | 'createdAt' | 'hasExactDate' | 'completionMinutes'>,
+  ): Promise<SurveyResponse>;
   remove(id: string): Promise<void>;
   reset(): Promise<SurveyResponse[]>;
 }
@@ -26,26 +28,27 @@ function createId(): string {
 }
 
 class LocalDataService implements IDataService {
-  /** قراءة كل الاستجابات، مع زرع بيانات أولية عند أول تشغيل. */
+  /** قراءة كل الاستجابات، مع تحميل البيانات الفعلية عند أول تشغيل. */
   async getAll(): Promise<SurveyResponse[]> {
     const alreadySeeded = storage.get<boolean>(SEEDED_KEY, false);
     if (!alreadySeeded) {
-      const seed = generateSeedResponses();
-      storage.set(RESPONSES_KEY, seed);
+      storage.set(RESPONSES_KEY, REAL_RESPONSES);
       storage.set(SEEDED_KEY, true);
-      return seed;
+      return REAL_RESPONSES;
     }
     return storage.get<SurveyResponse[]>(RESPONSES_KEY, []);
   }
 
   /** إضافة استجابة جديدة وإرجاعها بعد توليد المعرّف والطابع الزمني. */
   async add(
-    input: Omit<SurveyResponse, 'id' | 'createdAt'>,
+    input: Omit<SurveyResponse, 'id' | 'createdAt' | 'hasExactDate' | 'completionMinutes'>,
   ): Promise<SurveyResponse> {
     const all = await this.getAll();
     const response: SurveyResponse = {
       ...input,
       id: createId(),
+      hasExactDate: true,
+      completionMinutes: null,
       createdAt: new Date().toISOString(),
     };
     storage.set(RESPONSES_KEY, [response, ...all]);
@@ -61,12 +64,11 @@ class LocalDataService implements IDataService {
     );
   }
 
-  /** إعادة تعيين كل البيانات إلى الحالة الأولية. */
+  /** إعادة تعيين كل البيانات إلى البيانات الفعلية الأصلية. */
   async reset(): Promise<SurveyResponse[]> {
-    const seed = generateSeedResponses();
-    storage.set(RESPONSES_KEY, seed);
+    storage.set(RESPONSES_KEY, REAL_RESPONSES);
     storage.set(SEEDED_KEY, true);
-    return seed;
+    return REAL_RESPONSES;
   }
 }
 

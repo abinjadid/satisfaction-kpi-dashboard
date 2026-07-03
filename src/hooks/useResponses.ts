@@ -14,10 +14,15 @@ import {
 export const DEFAULT_FILTERS: DashboardFilters = {
   year: 'all',
   month: 'all',
-  serviceType: 'all',
+  contributionArea: 'all',
   entity: 'all',
   search: '',
 };
+
+type AddResponseInput = Omit<
+  SurveyResponse,
+  'id' | 'createdAt' | 'hasExactDate' | 'completionMinutes'
+>;
 
 interface UseResponsesResult {
   loading: boolean;
@@ -27,14 +32,14 @@ interface UseResponsesResult {
   insights: Insight[];
   filters: DashboardFilters;
   years: string[];
+  entities: string[];
+  contributionAreas: string[];
   setFilter: <K extends keyof DashboardFilters>(
     key: K,
     value: DashboardFilters[K],
   ) => void;
   resetFilters: () => void;
-  addResponse: (
-    input: Omit<SurveyResponse, 'id' | 'createdAt'>,
-  ) => Promise<void>;
+  addResponse: (input: AddResponseInput) => Promise<void>;
   removeResponse: (id: string) => Promise<void>;
   resetData: () => Promise<void>;
 }
@@ -72,6 +77,21 @@ export function useResponses(): UseResponsesResult {
     return Array.from(set).sort((a, b) => Number(b) - Number(a));
   }, [responses]);
 
+  // الجهات المتاحة مشتقّة من البيانات.
+  const entities = useMemo(() => {
+    const set = new Set(responses.map((r) => r.entity));
+    return Array.from(set).sort((a, b) => a.localeCompare(b, 'ar'));
+  }, [responses]);
+
+  // مجالات المساهمة المتاحة مشتقّة من البيانات.
+  const contributionAreas = useMemo(() => {
+    const set = new Set<string>();
+    for (const r of responses) {
+      for (const area of r.contributionAreas) set.add(area);
+    }
+    return Array.from(set).sort((a, b) => a.localeCompare(b, 'ar'));
+  }, [responses]);
+
   // تطبيق كل عوامل التصفية.
   const filtered = useMemo(() => {
     const q = filters.search.trim().toLowerCase();
@@ -81,12 +101,16 @@ export function useResponses(): UseResponsesResult {
         return false;
       if (filters.month !== 'all' && d.getMonth().toString() !== filters.month)
         return false;
-      if (filters.serviceType !== 'all' && r.serviceType !== filters.serviceType)
+      if (
+        filters.contributionArea !== 'all' &&
+        !r.contributionAreas.includes(filters.contributionArea)
+      )
         return false;
       if (filters.entity !== 'all' && r.entity !== filters.entity) return false;
       if (q) {
-        const haystack =
-          `${r.entity} ${r.serviceType} ${r.notes ?? ''}`.toLowerCase();
+        const haystack = `${r.entity} ${r.contributionAreas.join(' ')} ${
+          r.implementationNotes ?? ''
+        } ${r.improvementNotes ?? ''}`.toLowerCase();
         if (!haystack.includes(q)) return false;
       }
       return true;
@@ -108,13 +132,10 @@ export function useResponses(): UseResponsesResult {
 
   const resetFilters = useCallback(() => setFilters(DEFAULT_FILTERS), []);
 
-  const addResponse = useCallback(
-    async (input: Omit<SurveyResponse, 'id' | 'createdAt'>) => {
-      const created = await dataService.add(input);
-      setResponses((prev) => [created, ...prev]);
-    },
-    [],
-  );
+  const addResponse = useCallback(async (input: AddResponseInput) => {
+    const created = await dataService.add(input);
+    setResponses((prev) => [created, ...prev]);
+  }, []);
 
   const removeResponse = useCallback(async (id: string) => {
     await dataService.remove(id);
@@ -135,6 +156,8 @@ export function useResponses(): UseResponsesResult {
     insights,
     filters,
     years,
+    entities,
+    contributionAreas,
     setFilter,
     resetFilters,
     addResponse,

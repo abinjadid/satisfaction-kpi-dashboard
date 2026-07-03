@@ -5,11 +5,13 @@ import { Button } from '@/components/ui/button';
 import { Select, type SelectOption } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { ENTITIES, MONTHS_AR, SERVICE_TYPES } from '@/utils/constants';
+import { MONTHS_AR } from '@/utils/constants';
 
 interface FiltersProps {
   filters: DashboardFilters;
   years: string[];
+  entities: string[];
+  contributionAreas: string[];
   onChange: <K extends keyof DashboardFilters>(
     key: K,
     value: DashboardFilters[K],
@@ -22,8 +24,15 @@ const withAll = (label: string, options: SelectOption[]): SelectOption[] => [
   ...options,
 ];
 
-/** شريط التصفية: السنة، الشهر، نوع الخدمة، الجهة، البحث، وإعادة التعيين. */
-export function Filters({ filters, years, onChange, onReset }: FiltersProps) {
+/** شريط التصفية: السنة، الشهر، مجال المساهمة، الجهة، البحث، وإعادة التعيين. */
+export function Filters({
+  filters,
+  years,
+  entities,
+  contributionAreas,
+  onChange,
+  onReset,
+}: FiltersProps) {
   const yearOptions = withAll(
     'كل السنوات',
     years.map((y) => ({ value: y, label: y })),
@@ -32,13 +41,13 @@ export function Filters({ filters, years, onChange, onReset }: FiltersProps) {
     'كل الأشهر',
     MONTHS_AR.map((m, i) => ({ value: i.toString(), label: m })),
   );
-  const serviceOptions = withAll(
-    'كل الخدمات',
-    SERVICE_TYPES.map((s) => ({ value: s, label: s })),
+  const areaOptions = withAll(
+    'كل المجالات',
+    contributionAreas.map((a) => ({ value: a, label: a })),
   );
   const entityOptions = withAll(
     'كل الجهات',
-    ENTITIES.map((e) => ({ value: e, label: e })),
+    entities.map((e) => ({ value: e, label: e })),
   );
 
   return (
@@ -69,12 +78,12 @@ export function Filters({ filters, years, onChange, onReset }: FiltersProps) {
           />
         </div>
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="f-service">نوع الخدمة</Label>
+          <Label htmlFor="f-area">مجال المساهمة</Label>
           <Select
-            id="f-service"
-            options={serviceOptions}
-            value={filters.serviceType}
-            onChange={(e) => onChange('serviceType', e.target.value)}
+            id="f-area"
+            options={areaOptions}
+            value={filters.contributionArea}
+            onChange={(e) => onChange('contributionArea', e.target.value)}
           />
         </div>
         <div className="flex flex-col gap-1.5">

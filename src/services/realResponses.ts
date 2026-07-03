@@ -1,0 +1,535 @@
+/**
+ * البيانات الفعلية لاستبيان الرضا عن الخدمات الاستشارية المقدمة من هيئة الحكومة الرقمية.
+ * مصدر البيانات: "لوحة تتبع مؤشر الرضا عن الخدمات الاستشارية المقدمة من هيئة الحكومة الرقمية.xlsx"
+ * (ورقتا "الأرقام الإجمالية" و"التفاصيل"). الاستجابات الخمس الأخيرة لم تتضمن طابعاً زمنياً
+ * في الملف المصدر، فأُسندت إلى نهاية آخر شهر معروف (hasExactDate: false) للحفاظ على دقة
+ * المخططات الزمنية دون التأثير على الإجماليات العامة.
+ */
+import type { SurveyResponse } from '@/types';
+
+export const REAL_RESPONSES: SurveyResponse[] = [
+  {
+    "id": "2",
+    "entity": "الهيئة العامة للعقار",
+    "respondentName": "مشاري احمد البسام",
+    "date": "2025-10-06",
+    "satisfaction": 5,
+    "recommendation": 5,
+    "implementationStatus": "full",
+    "implementationNotes": "الاستشارة في مراجعة استراتيجية التحول الرقمي",
+    "contributionAreas": [
+      "الاستشارة في مراجعة استراتيجية التحول الرقمي"
+    ],
+    "improvementNotes": "تحسين مخرجات استراتيجية التحول الرقمي",
+    "futureServiceRequests": "لا يوجد مقترحات حالياً",
+    "hasExactDate": true,
+    "completionMinutes": 4,
+    "createdAt": "2025-10-06T15:04:00.000Z"
+  },
+  {
+    "id": "3",
+    "entity": "الهيئة العامة للأمن الغذائي",
+    "respondentName": "صالح ملفي الثقفي",
+    "date": "2025-10-06",
+    "satisfaction": 5,
+    "recommendation": 5,
+    "implementationStatus": "partial",
+    "implementationNotes": "جاري تنفيذها",
+    "contributionAreas": [
+      "تحسين الموائمة مع التوجهات الوطنية"
+    ],
+    "improvementNotes": "تفصيل اكثر واجتماعات لفهم بعض المجالات مثل المشاريع الرقمية وخارطتها",
+    "futureServiceRequests": "تقيمات لحالات الاسختدام وتقديم الدعم في الحصول على تمويل من قسم الميزانيات الحكومية :)  ف",
+    "hasExactDate": true,
+    "completionMinutes": 5,
+    "createdAt": "2025-10-06T15:26:00.000Z"
+  },
+  {
+    "id": "4",
+    "entity": "مكتبة الملك فهد الوطنية",
+    "respondentName": "بندر حمد الفايز",
+    "date": "2025-10-07",
+    "satisfaction": 5,
+    "recommendation": 5,
+    "implementationStatus": "partial",
+    "implementationNotes": "تم أخذ التوصيات وإعادة صياغتها في كراسات شروط ومواصفات المكتبة ضمن نطاق العمل",
+    "contributionAreas": [
+      "تعزيز الكفاءة التشغيلية"
+    ],
+    "improvementNotes": "لا شي يذكر",
+    "futureServiceRequests": "تقريبا حول معايير التقييم الفني للمنافسات",
+    "hasExactDate": true,
+    "completionMinutes": 8,
+    "createdAt": "2025-10-07T08:22:00.000Z"
+  },
+  {
+    "id": "5",
+    "entity": "الهيئة العامة للتجارة الخارجية",
+    "respondentName": "سعد بن عبدالله الخويطر",
+    "date": "2025-10-07",
+    "satisfaction": 5,
+    "recommendation": 4,
+    "implementationStatus": "partial",
+    "implementationNotes": "قيد التنفيذ",
+    "contributionAreas": [
+      "تقليص مدة تنفيذ المشاريع الرقمية"
+    ],
+    "improvementNotes": "بناء نماذج مرجعية لنطاقات عمل موحدة بين الجهات الحكومية المرتبطة بإدارات التحول الرقمي والتقنية\nدعم الجهات الحكومية في التعرفة القيمية والتقديرية لنطاق العمل من خلال اطلاعكم على السوق بشكل دوري وتضمينها عند تقديم الخدمة\nبناء دليل خدمات مبني على أكثر الطلبات الواردة لكم بحيث يسرع عملية الوصول للإجابة وبالإمكان الاستفادة منه وتفعيل الذكاء الاصطناعي مثل ( البحث بالقضايا المشابهه وغيرها من خدمات )",
+    "futureServiceRequests": "اقتراح خدمة استشارية خاصة بتأسيس إدارات التقنية والتحول الرقمي في الجهات الناشئة أو التي تعمل على بناء التوجه الاستراتيجي الأولي لإدارات التحول الرقمي وذلك لضمان البناء بالشكل المتوائم مع التطلعات",
+    "hasExactDate": true,
+    "completionMinutes": 10,
+    "createdAt": "2025-10-07T08:22:00.000Z"
+  },
+  {
+    "id": "6",
+    "entity": "الأمانة العامة لمجلس المخاطر الوطنية",
+    "respondentName": "مشاري الغامدي",
+    "date": "2025-10-21",
+    "satisfaction": 5,
+    "recommendation": 5,
+    "implementationStatus": "partial",
+    "implementationNotes": "سيتم البدء بتنفيذ التوصيات من خلال المشروع القائم لعكس الأمال والتوقعات في الوصول للمطلوب",
+    "contributionAreas": [
+      "تعزيز الكفاءة التشغيلية"
+    ],
+    "improvementNotes": "جميع المخرجات التي تتوائم مع المستهدفات",
+    "futureServiceRequests": "إدارة المشاريع والمحافظ والميزانيات والنماذج المتكاملة لتحقيق المستهدفات الوطنية على الجهات وقياس الأداء",
+    "hasExactDate": true,
+    "completionMinutes": 3,
+    "createdAt": "2025-10-21T12:51:00.000Z"
+  },
+  {
+    "id": "7",
+    "entity": "هيئة تنمية البحث والتطوير والابتكار",
+    "respondentName": "Saleh Askar",
+    "date": "2025-11-06",
+    "satisfaction": 5,
+    "recommendation": 5,
+    "implementationStatus": "full",
+    "implementationNotes": "تم استلام مجموعة من الملاحظات على مستند الاستراتيجية الخاصة بالتحول الرقمي وتم العمل على تضمينها في النسخة المحدثه",
+    "contributionAreas": [
+      "تعزيز الكفاءة التشغيلية"
+    ],
+    "improvementNotes": "تقصير مدة التقييم وتزويد مقدم الطلب بحالة التقدم، عقد اجتماع مع مقدم قبل تسليم المخرج النهائي",
+    "futureServiceRequests": "لا يوجد",
+    "hasExactDate": true,
+    "completionMinutes": 3,
+    "createdAt": "2025-11-06T15:56:00.000Z"
+  },
+  {
+    "id": "8",
+    "entity": "مجمع الملك سلمان العالمي للغة العربية",
+    "respondentName": "مشاعل العنزي",
+    "date": "2025-11-11",
+    "satisfaction": 5,
+    "recommendation": 5,
+    "implementationStatus": "partial",
+    "implementationNotes": "تطبيق جزئي / قيد التنفيذ",
+    "contributionAreas": [
+      "تعزيز الكفاءة التشغيلية"
+    ],
+    "improvementNotes": "لا يوجد",
+    "futureServiceRequests": "تعزيز التحول الرقمي بالمجمع، وتقديم الدعم في الخدمات الاستشارية \nمع الشكر والتقدير لجهودكم",
+    "hasExactDate": true,
+    "completionMinutes": 3,
+    "createdAt": "2025-11-11T09:04:00.000Z"
+  },
+  {
+    "id": "9",
+    "entity": "وزارة الحرس الوطني",
+    "respondentName": "سويلم الحربي",
+    "date": "2025-12-01",
+    "satisfaction": 5,
+    "recommendation": 5,
+    "implementationStatus": "partial",
+    "implementationNotes": "جاري العمل والتنسيق مع الجهات ذات العلاقة",
+    "contributionAreas": [
+      "دليل استرشادي للتحول الرقمي"
+    ],
+    "improvementNotes": "التواصل المباشر وعقد ورش عمل للتوجيه خلال مرحلة التنفيذ",
+    "futureServiceRequests": "الذكاء الاصطناعي",
+    "hasExactDate": true,
+    "completionMinutes": 3,
+    "createdAt": "2025-12-01T12:53:00.000Z"
+  },
+  {
+    "id": "10",
+    "entity": "هيئة تطوير منطقة عسير",
+    "respondentName": "طيف الفصيلي",
+    "date": "2026-01-05",
+    "satisfaction": 4,
+    "recommendation": 5,
+    "implementationStatus": "partial",
+    "implementationNotes": "نفيدكم بانه يتم عمل خطة عمل لتنفيذ التوصيات والاخذ بها",
+    "contributionAreas": [
+      "تحديد التوجهات الصحيحة للجهات"
+    ],
+    "improvementNotes": "لا يوجد",
+    "futureServiceRequests": "دراسه تبني التقنيات الناشئة - دراسه لتحقيق متطلبات قياس التحول الرقمي",
+    "hasExactDate": true,
+    "completionMinutes": 5,
+    "createdAt": "2026-01-05T21:42:00.000Z"
+  },
+  {
+    "id": "11",
+    "entity": "جامعة الحدود الشمالية",
+    "respondentName": "د. سلطان الخليوي",
+    "date": "2026-02-24",
+    "satisfaction": 5,
+    "recommendation": 5,
+    "implementationStatus": "full",
+    "implementationNotes": "سوف يتم عمل خطة للتحسين والتطوير",
+    "contributionAreas": [
+      "زيادة معدل رضا المستفيد النهائي"
+    ],
+    "improvementNotes": "لايوجد",
+    "futureServiceRequests": "لايوجد",
+    "hasExactDate": true,
+    "completionMinutes": 1,
+    "createdAt": "2026-02-24T14:03:00.000Z"
+  },
+  {
+    "id": "12",
+    "entity": "الهيئة العامة للعناية بشؤون المسجد الحرام والمسجد النبوي",
+    "respondentName": "بندر بن عبدالله إمام",
+    "date": "2026-06-14",
+    "satisfaction": 5,
+    "recommendation": 5,
+    "implementationStatus": "partial",
+    "implementationNotes": "تحسين لنطاق العمل والمراحل",
+    "contributionAreas": [
+      "تعزيز الكفاءة التشغيلية"
+    ],
+    "improvementNotes": "تقديم تحسينات على الكراسة",
+    "futureServiceRequests": "المشاركة في اعداد الكراسة وكذلك المشاركة في تجويد المخرجات وجداول الكميات",
+    "hasExactDate": true,
+    "completionMinutes": 3,
+    "createdAt": "2026-06-14T13:30:00.000Z"
+  },
+  {
+    "id": "114933326390",
+    "entity": "جامعة طيبة",
+    "date": "2025-09-06",
+    "satisfaction": 5,
+    "recommendation": 5,
+    "implementationStatus": "partial",
+    "implementationNotes": "تم تحديد الملاحظات وجاري اعداد الخطة التصحيحية",
+    "contributionAreas": [
+      "تحسين جانب التخطيط الاستراتيجي"
+    ],
+    "improvementNotes": "اضافة أمثلة لتقريب معاني بعض المصطلحات",
+    "futureServiceRequests": "خدمة التواصل مابعد الخدمة الاستشارية لتقديم استشارات حية one-on-one لتوضيح ماورد في الخدمة الاستشارية ويتطلب توضيح أو دراسة أكثر",
+    "hasExactDate": true,
+    "completionMinutes": 5,
+    "createdAt": "2025-09-06T18:06:00.000Z"
+  },
+  {
+    "id": "114931810199",
+    "entity": "هيئة تقويم التعليم والتدريب",
+    "date": "2025-09-04",
+    "satisfaction": 5,
+    "recommendation": 5,
+    "implementationStatus": "full",
+    "implementationNotes": "تبني التوجه الاستراتيجي حيث انه مدعوم بتوصيات الحكومة الرقمية",
+    "contributionAreas": [
+      "تقليص مدة تنفيذ المشاريع الرقمية",
+      "تحسين التنسيق بين الإدارات الداخلية",
+      "تعزيز الكفاءة التشغيلية",
+      "زيادة معدل رضا المستفيد النهائي"
+    ],
+    "improvementNotes": "المتابعة و تقديم خدمات استشارية كجلسات دعم و اجتماعات",
+    "futureServiceRequests": "فتح خدمة لرفع التحسينات على التوصيات المقدمة و النسخ المحدثة من التطوير",
+    "hasExactDate": true,
+    "completionMinutes": 2,
+    "createdAt": "2025-09-04T09:41:00.000Z"
+  },
+  {
+    "id": "114924946785",
+    "entity": "أمانة محافظة حفر الباطن",
+    "date": "2025-08-26",
+    "satisfaction": 5,
+    "recommendation": 5,
+    "implementationStatus": "partial",
+    "implementationNotes": "التقرير مقدم وجاري عرضه على الإدارة",
+    "contributionAreas": [
+      "تقليص مدة تنفيذ المشاريع الرقمية",
+      "تحسين التنسيق بين الإدارات الداخلية",
+      "تعزيز الكفاءة التشغيلية",
+      "زيادة معدل رضا المستفيد النهائي"
+    ],
+    "improvementNotes": "خدمات الاستشارة التحولية الاستراتيجية وبناء الكوادر البشرية",
+    "hasExactDate": true,
+    "completionMinutes": 6,
+    "createdAt": "2025-08-26T12:10:00.000Z"
+  },
+  {
+    "id": "114923022019",
+    "entity": "وزارة التجارة",
+    "date": "2025-08-25",
+    "satisfaction": 5,
+    "recommendation": 5,
+    "implementationStatus": "partial",
+    "implementationNotes": "جاري تطبيق بعض من التوصيات",
+    "contributionAreas": [],
+    "improvementNotes": "لا يوجد",
+    "futureServiceRequests": "لا يوجد",
+    "hasExactDate": true,
+    "completionMinutes": 27,
+    "createdAt": "2025-08-25T15:22:00.000Z"
+  },
+  {
+    "id": "114921025948",
+    "entity": "الجامعة السعودية الإلكترونية",
+    "date": "2025-08-25",
+    "satisfaction": 5,
+    "recommendation": 5,
+    "implementationStatus": "partial",
+    "implementationNotes": "في إطار خطة تنفيذية فصلية",
+    "contributionAreas": [],
+    "improvementNotes": "رفع مستوى الورش التدريبية",
+    "futureServiceRequests": "الاستشارات المتعلقة بالذكاء الاصطناعي",
+    "hasExactDate": true,
+    "completionMinutes": 11,
+    "createdAt": "2025-08-25T10:25:00.000Z"
+  },
+  {
+    "id": "114919680710",
+    "entity": "الخدمات الطبية بوزارة الداخلية",
+    "date": "2025-08-25",
+    "satisfaction": 5,
+    "recommendation": 4,
+    "implementationStatus": "partial",
+    "implementationNotes": "يتم تنفيذ التوصيات وفق خطة العمل المعتمدة",
+    "contributionAreas": [],
+    "improvementNotes": "لا يوجد",
+    "futureServiceRequests": "لا يوجد",
+    "hasExactDate": true,
+    "completionMinutes": 13,
+    "createdAt": "2025-08-25T08:10:00.000Z"
+  },
+  {
+    "id": "114918348390",
+    "entity": "هيئة تطوير محمية الإمام عبدالعزيز بن محمد الملكية",
+    "date": "2025-08-25",
+    "satisfaction": 5,
+    "recommendation": 5,
+    "implementationStatus": "partial",
+    "implementationNotes": "تنفيذ جزئي للخطط والتوصيات ضمن مرحلة التطوير",
+    "contributionAreas": [],
+    "improvementNotes": "المزيد من التفاصيل في مخرجات الخدمة",
+    "futureServiceRequests": "مراجعة الاستراتيجيات الرقمية",
+    "hasExactDate": true,
+    "completionMinutes": 8,
+    "createdAt": "2025-08-25T02:17:00.000Z"
+  },
+  {
+    "id": "114915761064",
+    "entity": "برنامج الخدمات المشتركة",
+    "date": "2025-08-24",
+    "satisfaction": 5,
+    "recommendation": 4,
+    "implementationStatus": "partial",
+    "implementationNotes": "لا يوجد",
+    "contributionAreas": [],
+    "improvementNotes": "لا يوجد",
+    "futureServiceRequests": "لا يوجد",
+    "hasExactDate": true,
+    "completionMinutes": 9,
+    "createdAt": "2025-08-24T15:28:00.000Z"
+  },
+  {
+    "id": "114914437856",
+    "entity": "الهيئة العامة للمساحة والمعلومات الجيومكانية",
+    "date": "2025-08-24",
+    "satisfaction": 5,
+    "recommendation": 5,
+    "implementationStatus": "partial",
+    "implementationNotes": "جاري التطبيق",
+    "contributionAreas": [],
+    "improvementNotes": "لا يوجد",
+    "futureServiceRequests": "لا يوجد",
+    "hasExactDate": true,
+    "completionMinutes": 16,
+    "createdAt": "2025-08-24T12:11:00.000Z"
+  },
+  {
+    "id": "114913123210",
+    "entity": "هيئة تطوير منطقة حائل",
+    "date": "2025-08-24",
+    "satisfaction": 5,
+    "recommendation": 4,
+    "implementationStatus": "partial",
+    "implementationNotes": "لا يوجد",
+    "contributionAreas": [],
+    "improvementNotes": "لا يوجد",
+    "futureServiceRequests": "لا يوجد",
+    "hasExactDate": true,
+    "completionMinutes": 8,
+    "createdAt": "2025-08-24T06:55:00.000Z"
+  },
+  {
+    "id": "114909520345",
+    "entity": "الهيئة العامة لعقارات الدولة",
+    "date": "2025-08-23",
+    "satisfaction": 5,
+    "recommendation": 5,
+    "implementationStatus": "full",
+    "implementationNotes": "تم تطبيق جميع التوصيات المقترحة",
+    "contributionAreas": [],
+    "improvementNotes": "لا يوجد",
+    "futureServiceRequests": "لا يوجد",
+    "hasExactDate": true,
+    "completionMinutes": 13,
+    "createdAt": "2025-08-23T18:01:00.000Z"
+  },
+  {
+    "id": "114908300120",
+    "entity": "هيئة تطوير محمية الملك عبدالعزيز الملكية",
+    "date": "2025-08-23",
+    "satisfaction": 5,
+    "recommendation": 5,
+    "implementationStatus": "partial",
+    "implementationNotes": "جاري التطبيق",
+    "contributionAreas": [],
+    "improvementNotes": "لا يوجد",
+    "futureServiceRequests": "لا يوجد",
+    "hasExactDate": true,
+    "completionMinutes": 12,
+    "createdAt": "2025-08-23T13:43:00.000Z"
+  },
+  {
+    "id": "114905800100",
+    "entity": "وزارة التعليم",
+    "date": "2025-08-23",
+    "satisfaction": 3,
+    "recommendation": 2,
+    "implementationStatus": "none",
+    "implementationNotes": "لا يوجد",
+    "contributionAreas": [],
+    "improvementNotes": "تحسين جودة التقارير وتبسيطها",
+    "futureServiceRequests": "التدريب العملي على تطبيق التوصيات",
+    "hasExactDate": true,
+    "completionMinutes": 13,
+    "createdAt": "2025-08-23T05:08:00.000Z"
+  },
+  {
+    "id": "114904600050",
+    "entity": "صندوق الشهداء والمصابين والأسرى والمفقودين",
+    "date": "2025-08-22",
+    "satisfaction": 5,
+    "recommendation": 5,
+    "implementationStatus": "partial",
+    "implementationNotes": "جاري التنفيذ",
+    "contributionAreas": [],
+    "improvementNotes": "لا يوجد",
+    "futureServiceRequests": "لا يوجد",
+    "hasExactDate": true,
+    "completionMinutes": 12,
+    "createdAt": "2025-08-22T22:50:00.000Z"
+  },
+  {
+    "id": "114900800005",
+    "entity": "وزارة الصناعة والثروة المعدنية",
+    "date": "2025-08-22",
+    "satisfaction": 5,
+    "recommendation": 5,
+    "implementationStatus": "partial",
+    "implementationNotes": "لا يوجد",
+    "contributionAreas": [],
+    "improvementNotes": "لا يوجد",
+    "futureServiceRequests": "لا يوجد",
+    "hasExactDate": true,
+    "completionMinutes": 14,
+    "createdAt": "2025-08-22T06:44:00.000Z"
+  },
+  {
+    "id": "114899500003",
+    "entity": "جامعة بيشة",
+    "date": "2025-08-22",
+    "satisfaction": 5,
+    "recommendation": 5,
+    "implementationStatus": "partial",
+    "implementationNotes": "لا يوجد",
+    "contributionAreas": [],
+    "improvementNotes": "لا يوجد",
+    "futureServiceRequests": "لا يوجد",
+    "hasExactDate": true,
+    "completionMinutes": 14,
+    "createdAt": "2025-08-22T01:40:00.000Z"
+  },
+  {
+    "id": "114898200002",
+    "entity": "جامعة جازان",
+    "date": "2025-08-21",
+    "satisfaction": 5,
+    "recommendation": 4,
+    "implementationStatus": "partial",
+    "implementationNotes": "لا يوجد",
+    "contributionAreas": [],
+    "improvementNotes": "لا يوجد",
+    "futureServiceRequests": "لا يوجد",
+    "hasExactDate": true,
+    "completionMinutes": 15,
+    "createdAt": "2025-08-21T20:25:00.000Z"
+  },
+  {
+    "id": "real-29",
+    "entity": "وزارة الثقافة",
+    "date": "2026-06-30",
+    "satisfaction": 5,
+    "recommendation": 5,
+    "implementationStatus": "unspecified",
+    "contributionAreas": [],
+    "hasExactDate": false,
+    "completionMinutes": null,
+    "createdAt": "2026-06-30T12:00:00.000Z"
+  },
+  {
+    "id": "real-30",
+    "entity": "إمارة منطقة الحدود الشمالية",
+    "date": "2026-06-30",
+    "satisfaction": 5,
+    "recommendation": 4,
+    "implementationStatus": "unspecified",
+    "contributionAreas": [],
+    "hasExactDate": false,
+    "completionMinutes": null,
+    "createdAt": "2026-06-30T12:00:00.000Z"
+  },
+  {
+    "id": "real-31",
+    "entity": "الهيئة العامة للموانئ",
+    "date": "2026-06-30",
+    "satisfaction": 4,
+    "recommendation": 4.5,
+    "implementationStatus": "unspecified",
+    "contributionAreas": [],
+    "hasExactDate": false,
+    "completionMinutes": null,
+    "createdAt": "2026-06-30T12:00:00.000Z"
+  },
+  {
+    "id": "real-32",
+    "entity": "المركز الوطني للتخصيص",
+    "date": "2026-06-30",
+    "satisfaction": 4.5,
+    "recommendation": null,
+    "implementationStatus": "unspecified",
+    "contributionAreas": [],
+    "hasExactDate": false,
+    "completionMinutes": null,
+    "createdAt": "2026-06-30T12:00:00.000Z"
+  },
+  {
+    "id": "real-33",
+    "entity": "هيئة تطوير المنطقة الشرقية",
+    "date": "2026-06-30",
+    "satisfaction": 4.5,
+    "recommendation": null,
+    "implementationStatus": "unspecified",
+    "contributionAreas": [],
+    "hasExactDate": false,
+    "completionMinutes": null,
+    "createdAt": "2026-06-30T12:00:00.000Z"
+  }
+];

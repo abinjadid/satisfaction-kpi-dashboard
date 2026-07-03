@@ -1,8 +1,8 @@
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Save, X } from 'lucide-react';
-import type { SurveyResponse } from '@/types';
+import { Check, Save, X } from 'lucide-react';
+import type { ImplementationStatus, SurveyResponse } from '@/types';
 import { Dialog } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,38 +10,44 @@ import { Label } from '@/components/ui/label';
 import { Select } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { RatingInput } from './RatingInput';
-import {
-  DIMENSION_KEYS,
-  DIMENSION_LABELS,
-  ENTITIES,
-  SERVICE_TYPES,
-} from '@/utils/constants';
+import { CONTRIBUTION_AREAS, IMPLEMENTATION_STATUS } from '@/utils/constants';
+import { cn } from '@/utils/cn';
 
 interface AddResponseDialogProps {
   open: boolean;
   onClose: () => void;
-  onSubmit: (data: Omit<SurveyResponse, 'id' | 'createdAt'>) => void;
+  onSubmit: (
+    data: Omit<
+      SurveyResponse,
+      'id' | 'createdAt' | 'hasExactDate' | 'completionMinutes'
+    >,
+  ) => void;
+  knownEntities: string[];
 }
 
-const ratingSchema = z
-  .number({ invalid_type_error: 'مطلوب' })
-  .int()
-  .min(1, 'التقييم مطلوب')
-  .max(5);
+const IMPLEMENTATION_OPTIONS: ImplementationStatus[] = [
+  'full',
+  'partial',
+  'none',
+  'unspecified',
+];
 
-/** مخطط التحقق من صحة نموذج إضافة استجابة. */
+/** مخطط التحقق من صحة نموذج إضافة استجابة، مطابق لأسئلة استبيان الرضا الفعلي. */
 const formSchema = z.object({
-  entity: z.string().min(1, 'يرجى اختيار الجهة'),
-  serviceType: z.string().min(1, 'يرجى اختيار نوع الخدمة'),
+  entity: z.string().min(1, 'اسم الجهة مطلوب'),
   date: z.string().min(1, 'يرجى تحديد تاريخ الاستجابة'),
-  quality: ratingSchema,
-  speed: ratingSchema,
-  clarity: ratingSchema,
-  communication: ratingSchema,
-  professionalism: ratingSchema,
-  addedValue: ratingSchema,
-  recommends: z.enum(['yes', 'no']),
-  notes: z.string().max(500, 'الملاحظات طويلة جداً').optional(),
+  satisfaction: z
+    .number({ invalid_type_error: 'مطلوب' })
+    .int()
+    .min(1, 'تقييم الرضا مطلوب')
+    .max(5),
+  recommendation: z.number().int().min(0).max(5),
+  implementationStatus: z.enum(['full', 'partial', 'none', 'unspecified']),
+  contributionAreas: z.array(z.string()),
+  otherArea: z.string().max(200).optional(),
+  implementationNotes: z.string().max(1000).optional(),
+  improvementNotes: z.string().max(1000).optional(),
+  futureServiceRequests: z.string().max(1000).optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -50,23 +56,23 @@ const today = () => new Date().toISOString().slice(0, 10);
 
 const defaultValues: FormValues = {
   entity: '',
-  serviceType: '',
   date: today(),
-  quality: 0,
-  speed: 0,
-  clarity: 0,
-  communication: 0,
-  professionalism: 0,
-  addedValue: 0,
-  recommends: 'yes',
-  notes: '',
+  satisfaction: 0,
+  recommendation: 0,
+  implementationStatus: 'unspecified',
+  contributionAreas: [],
+  otherArea: '',
+  implementationNotes: '',
+  improvementNotes: '',
+  futureServiceRequests: '',
 };
 
-/** نافذة حوارية لإضافة استجابة جديدة مع تحقق كامل من المدخلات. */
+/** نافذة حوارية لإضافة استجابة جديدة مطابقة لأسئلة استبيان الرضا الفعلي. */
 export function AddResponseDialog({
   open,
   onClose,
   onSubmit,
+  knownEntities,
 }: AddResponseDialogProps) {
   const {
     register,
@@ -80,20 +86,20 @@ export function AddResponseDialog({
   });
 
   const submit = handleSubmit((values) => {
+    const areas = [...values.contributionAreas];
+    const other = values.otherArea?.trim();
+    if (other) areas.push(other);
+
     onSubmit({
-      entity: values.entity,
-      serviceType: values.serviceType,
+      entity: values.entity.trim(),
       date: values.date,
-      dimensions: {
-        quality: values.quality,
-        speed: values.speed,
-        clarity: values.clarity,
-        communication: values.communication,
-        professionalism: values.professionalism,
-        addedValue: values.addedValue,
-      },
-      recommends: values.recommends === 'yes',
-      notes: values.notes?.trim() || '',
+      satisfaction: values.satisfaction,
+      recommendation: values.recommendation === 0 ? null : values.recommendation,
+      implementationStatus: values.implementationStatus,
+      implementationNotes: values.implementationNotes?.trim() || undefined,
+      contributionAreas: areas,
+      improvementNotes: values.improvementNotes?.trim() || undefined,
+      futureServiceRequests: values.futureServiceRequests?.trim() || undefined,
     });
     reset(defaultValues);
   });
@@ -108,40 +114,27 @@ export function AddResponseDialog({
       open={open}
       onClose={handleClose}
       title="إضافة استجابة جديدة"
-      description="أدخل تقييم الجهة المستفيدة لتحديث المؤشرات تلقائياً."
+      description="أدخل استجابة الجهة المستفيدة على استبيان الرضا لتحديث المؤشرات تلقائياً."
     >
       <form onSubmit={submit} className="space-y-5">
         {/* بيانات أساسية */}
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="entity">اسم الجهة</Label>
-            <Select
+            <Label htmlFor="entity">اسم الجهة المستفيدة</Label>
+            <Input
               id="entity"
-              options={[
-                { value: '', label: 'اختر الجهة…' },
-                ...ENTITIES.map((e) => ({ value: e, label: e })),
-              ]}
+              list="known-entities"
+              placeholder="مثال: وزارة التعليم"
               {...register('entity')}
             />
+            <datalist id="known-entities">
+              {knownEntities.map((e) => (
+                <option key={e} value={e} />
+              ))}
+            </datalist>
             {errors.entity && (
               <span className="text-xs text-destructive">
                 {errors.entity.message}
-              </span>
-            )}
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="serviceType">نوع الخدمة</Label>
-            <Select
-              id="serviceType"
-              options={[
-                { value: '', label: 'اختر الخدمة…' },
-                ...SERVICE_TYPES.map((s) => ({ value: s, label: s })),
-              ]}
-              {...register('serviceType')}
-            />
-            {errors.serviceType && (
-              <span className="text-xs text-destructive">
-                {errors.serviceType.message}
               </span>
             )}
           </div>
@@ -156,78 +149,115 @@ export function AddResponseDialog({
           </div>
         </div>
 
-        {/* تقييم الأبعاد */}
+        {/* التقييمات */}
         <div className="rounded-xl border border-border bg-muted/30 p-4">
-          <h4 className="mb-3 text-sm font-bold text-foreground">
-            تقييم أبعاد الخدمة (من 1 إلى 5)
-          </h4>
           <div className="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
-            {DIMENSION_KEYS.map((key) => (
-              <Controller
-                key={key}
-                name={key}
-                control={control}
-                render={({ field }) => (
-                  <RatingInput
-                    label={DIMENSION_LABELS[key]}
-                    value={field.value}
-                    onChange={field.onChange}
-                    error={errors[key]?.message}
-                  />
-                )}
-              />
-            ))}
+            <Controller
+              name="satisfaction"
+              control={control}
+              render={({ field }) => (
+                <RatingInput
+                  label="كيف تقيم رضاك عن الخدمة المقدمة؟"
+                  value={field.value}
+                  onChange={field.onChange}
+                  error={errors.satisfaction?.message}
+                />
+              )}
+            />
+            <Controller
+              name="recommendation"
+              control={control}
+              render={({ field }) => (
+                <RatingInput
+                  label="ما مدى احتمال أن توصي بهذه الخدمة للآخرين؟"
+                  value={field.value}
+                  onChange={field.onChange}
+                />
+              )}
+            />
           </div>
         </div>
 
-        {/* التوصية */}
-        <div className="flex flex-col gap-2">
-          <Label>هل توصي بالخدمة؟</Label>
-          <Controller
-            name="recommends"
-            control={control}
-            render={({ field }) => (
-              <div className="flex gap-3">
-                {(
-                  [
-                    { value: 'yes', label: 'نعم، أوصي بها' },
-                    { value: 'no', label: 'لا' },
-                  ] as const
-                ).map((opt) => (
-                  <button
-                    key={opt.value}
-                    type="button"
-                    onClick={() => field.onChange(opt.value)}
-                    className={
-                      'flex-1 rounded-lg border px-4 py-2.5 text-sm font-medium transition-all ' +
-                      (field.value === opt.value
-                        ? opt.value === 'yes'
-                          ? 'border-accent bg-accent/10 text-accent'
-                          : 'border-destructive bg-destructive/10 text-destructive'
-                        : 'border-border bg-background text-muted-foreground hover:border-primary/40')
-                    }
-                  >
-                    {opt.label}
-                  </button>
-                ))}
-              </div>
-            )}
+        {/* درجة تطبيق التوصيات */}
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="implementationStatus">
+            إلى أي درجة تم تطبيق التوصيات والنتائج من هذه الخدمة؟
+          </Label>
+          <Select
+            id="implementationStatus"
+            options={IMPLEMENTATION_OPTIONS.map((status) => ({
+              value: status,
+              label: IMPLEMENTATION_STATUS[status].label,
+            }))}
+            {...register('implementationStatus')}
           />
         </div>
 
-        {/* ملاحظات */}
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="notes">ملاحظات (اختياري)</Label>
-          <Textarea
-            id="notes"
-            placeholder="أي ملاحظات إضافية حول الخدمة…"
-            {...register('notes')}
+        {/* مجالات المساهمة */}
+        <div className="flex flex-col gap-2">
+          <Label>ساهمت الاستشارة المقدمة من خلال:</Label>
+          <Controller
+            name="contributionAreas"
+            control={control}
+            render={({ field }) => (
+              <div className="flex flex-wrap gap-2">
+                {CONTRIBUTION_AREAS.map((area) => {
+                  const checked = field.value.includes(area);
+                  return (
+                    <button
+                      key={area}
+                      type="button"
+                      onClick={() =>
+                        field.onChange(
+                          checked
+                            ? field.value.filter((v) => v !== area)
+                            : [...field.value, area],
+                        )
+                      }
+                      className={cn(
+                        'inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-all',
+                        checked
+                          ? 'border-primary bg-primary/10 text-primary'
+                          : 'border-border bg-background text-muted-foreground hover:border-primary/40',
+                      )}
+                    >
+                      {checked && <Check className="h-3 w-3" />}
+                      {area}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
           />
-          {errors.notes && (
-            <span className="text-xs text-destructive">
-              {errors.notes.message}
-            </span>
-          )}
+          <Input
+            placeholder="مجال آخر (اختياري)…"
+            {...register('otherArea')}
+          />
+        </div>
+
+        {/* ملاحظات نصية */}
+        <div className="grid grid-cols-1 gap-4">
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="implementationNotes">
+              وصف موجز لكيفية تنفيذ التوصيات والنتائج المحققة (اختياري)
+            </Label>
+            <Textarea id="implementationNotes" {...register('implementationNotes')} />
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="improvementNotes">
+              ما هي الجوانب التي يمكن تحسينها في الخدمة؟ (اختياري)
+            </Label>
+            <Textarea id="improvementNotes" {...register('improvementNotes')} />
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="futureServiceRequests">
+              ما هي الخدمات الاستشارية المستقبلية المرغوبة؟ (اختياري)
+            </Label>
+            <Textarea
+              id="futureServiceRequests"
+              {...register('futureServiceRequests')}
+            />
+          </div>
         </div>
 
         {/* أزرار */}

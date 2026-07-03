@@ -1,47 +1,44 @@
 /**
  * نماذج البيانات الأساسية للوحة مؤشر الرضا عن الخدمات الاستشارية.
- * كل الأنواع هنا تُستخدم عبر طبقات الخدمة والـ hooks والمكوّنات.
+ * الحقول مطابقة لبنية استبيان الرضا الفعلي (نموذج Microsoft Forms):
+ * تقييم رضا عام واحد، احتمالية توصية، ودرجة تطبيق التوصيات.
  */
 
-/** أبعاد تقييم الخدمة الستة (مقياس 1-5). */
-export interface ServiceDimensions {
-  /** جودة الخدمة */
-  quality: number;
-  /** سرعة الإنجاز */
-  speed: number;
-  /** وضوح المخرجات */
-  clarity: number;
-  /** سهولة التواصل */
-  communication: number;
-  /** احترافية المستشار */
-  professionalism: number;
-  /** القيمة المضافة */
-  addedValue: number;
-}
+/** درجة تطبيق الجهة المستفيدة لتوصيات الاستشارة. */
+export type ImplementationStatus = 'full' | 'partial' | 'none' | 'unspecified';
 
-/** مفاتيح الأبعاد لاستخدامها في الحلقات والعناوين. */
-export type DimensionKey = keyof ServiceDimensions;
-
-/** استجابة واحدة من جهة مستفيدة. */
+/** استجابة واحدة من جهة مستفيدة على استبيان الرضا. */
 export interface SurveyResponse {
   id: string;
   /** اسم الجهة المستفيدة */
   entity: string;
-  /** نوع الخدمة الاستشارية */
-  serviceType: string;
+  /** اسم مقدّم الاستجابة (اختياري) */
+  respondentName?: string;
   /** تاريخ الاستجابة بصيغة ISO (YYYY-MM-DD) */
   date: string;
-  /** التقييمات عبر الأبعاد الستة */
-  dimensions: ServiceDimensions;
-  /** هل توصي الجهة بالخدمة؟ */
-  recommends: boolean;
-  /** ملاحظات اختيارية */
-  notes?: string;
-  /** طابع زمني للإنشاء */
+  /** هل التاريخ فعلي من الاستبيان أم مُقدَّر لعدم توفره؟ */
+  hasExactDate: boolean;
+  /** كيف تقيم رضاك عن الخدمة المقدمة؟ (1-5، تقبل الكسور) */
+  satisfaction: number;
+  /** ما مدى احتمال أن توصي بهذه الخدمة للآخرين؟ (1-5)، قد تكون غير متوفرة */
+  recommendation: number | null;
+  /** إلى أي درجة قامت الجهة بتطبيق التوصيات؟ */
+  implementationStatus: ImplementationStatus;
+  /** وصف موجز لكيفية تنفيذ التوصيات والنتائج المحققة */
+  implementationNotes?: string;
+  /** المجالات التي ساهمت فيها الاستشارة (قد تتضمن أكثر من مجال) */
+  contributionAreas: string[];
+  /** الجوانب التي يمكن تحسينها في الخدمة */
+  improvementNotes?: string;
+  /** الخدمات الاستشارية المستقبلية المرغوبة */
+  futureServiceRequests?: string;
+  /** مدة تعبئة الاستبيان بالدقائق (إن توفر وقت البدء والانتهاء) */
+  completionMinutes: number | null;
+  /** طابع زمني للإنشاء/الاستيراد */
   createdAt: string;
 }
 
-/** مستويات الرضا المشتقة من متوسط التقييم. */
+/** مستويات الرضا المشتقة من قيمة التقييم. */
 export type SatisfactionLevel =
   | 'verySatisfied'
   | 'satisfied'
@@ -73,15 +70,18 @@ export interface MonthlyPoint {
   responses: number;
 }
 
-/** متوسط تقييم خدمة معيّنة. */
-export interface ServiceScore {
-  serviceType: string;
+/** متوسط تقييم مجال مساهمة معيّن (مشتق من حقل "ساهمت الاستشارة من خلال"). */
+export interface ContributionAreaScore {
+  area: string;
   /** المتوسط من 5 */
   average: number;
   /** نسبة مئوية */
   percentage: number;
   responses: number;
 }
+
+/** توزيع الاستجابات على درجات تطبيق التوصيات. */
+export type ImplementationBreakdown = Record<ImplementationStatus, number>;
 
 /** المقاييس المجمّعة المحسوبة من كل الاستجابات. */
 export interface DashboardMetrics {
@@ -91,12 +91,14 @@ export interface DashboardMetrics {
   recommendationRate: KpiMetric;
   responsesMetric: KpiMetric;
   distribution: SatisfactionDistribution;
-  dimensionAverages: ServiceDimensions;
+  implementationBreakdown: ImplementationBreakdown;
   monthly: MonthlyPoint[];
-  topServices: ServiceScore[];
-  bottomServices: ServiceScore[];
-  /** متوسط زمن الاستجابة بالأيام (من تاريخ الاستجابة حتى الإدخال) */
-  avgResponseTimeDays: number;
+  topContributionAreas: ContributionAreaScore[];
+  bottomContributionAreas: ContributionAreaScore[];
+  /** نسبة الاستجابات التي منحت تقييماً كاملاً (5 من 5) */
+  perfectScoreRate: number;
+  /** متوسط مدة تعبئة الاستبيان بالدقائق */
+  avgCompletionMinutes: number;
   lastUpdated: string | null;
 }
 
@@ -104,7 +106,7 @@ export interface DashboardMetrics {
 export interface DashboardFilters {
   year: string;
   month: string;
-  serviceType: string;
+  contributionArea: string;
   entity: string;
   search: string;
 }
