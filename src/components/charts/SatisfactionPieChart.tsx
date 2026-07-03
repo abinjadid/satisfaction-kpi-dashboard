@@ -2,6 +2,7 @@ import { Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recha
 import type { SatisfactionDistribution, SatisfactionLevel } from '@/types';
 import { SATISFACTION_LEVELS } from '@/utils/constants';
 import { ChartTooltip } from './ChartTooltip';
+import { DonutLabel } from './DonutLabel';
 
 /** مخطط دائري (Donut) لتوزيع مستويات الرضا الخمسة. */
 export function SatisfactionPieChart({
@@ -16,8 +17,6 @@ export function SatisfactionPieChart({
       color: SATISFACTION_LEVELS[level].color,
     }),
   );
-
-  const total = data.reduce((acc, d) => acc + d.value, 0);
 
   return (
     <ResponsiveContainer width="100%" height={300}>
@@ -34,11 +33,7 @@ export function SatisfactionPieChart({
           stroke="hsl(var(--card))"
           strokeWidth={2}
           animationDuration={1000}
-          label={({ value }) =>
-            total > 0 && value > 0
-              ? `${Math.round((value / total) * 100)}%`
-              : ''
-          }
+          label={<DonutLabel />}
           labelLine={false}
         >
           {data.map((d) => (
